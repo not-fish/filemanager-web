@@ -11,6 +11,11 @@
         :scroll="{ x: 2000}"
         bordered
         @change="handleTableChange">
+
+        <template slot="action" slot-scope="text">
+          <a @click="downloadFile(text)">下载</a>
+        </template>
+
       </a-table>
     </div>
 </template>
@@ -50,47 +55,48 @@
         columns: [
           {
             title:'ID',
-            align:"left",
+            align:"center",
             width:60,
             dataIndex: 'id'
           },
           {
             title:'原文件名',
-            align:"left",
+            align:"center",
             ellipsis:true,
             dataIndex: 'oldFileName'
           },
           {
             title:'文件名',
-            align:"left",
+            align:"center",
             ellipsis:true,
             dataIndex: 'newFileName'
           }
           ,
           {
             title:'后缀名',
-            align:"left",
+            align:"center",
             width:100,
             dataIndex: 'ext'
           },
           {
             title:'路径',
-            align:"left",
+            align:"center",
             dataIndex: 'path'
           },
           {
             title:'大小（字节）',
-            align:"left",
+            align:"center",
             dataIndex: 'size'
           },
           {
             title:'类型',
-            align:"left",
+            align:"center",
+            width:110,
             dataIndex: 'type'
           },
           {
             title:'是否为图片',
-            align:"left",
+            align:"center",
             width:110,
             dataIndex: 'wonImg',
             customRender:function(wonImg){
@@ -99,23 +105,31 @@
           },
           {
             title:'下载次数',
-            align:"left",
+            align:"center",
             width:110,
             dataIndex: 'downloadCounts'
           },
           {
             title:'上传时间',
-            align:"left",
+            align:"center",
             ellipsis:true,
             dataIndex: 'uploadTime',
             width:200,
             customRender:function (uploadTime) {
               return moment(uploadTime).format("yyyy-MM-DD HH:mm:ss:SSS")
             }
+          },
+          {
+            title:'操作',
+            align:'center',
+            width:100,
+            fixed:'right',
+            scopedSlots: { customRender: 'action' },
           }
         ],
         url:{
-          list: "http://localhost:9090/filemanager/file/list"
+          list: "http://localhost:9090/filemanager/file/list",
+          download: "http://localhost:9090/filemanager/file/download",
         }
       }
     },
@@ -143,6 +157,22 @@
         }).finally(()=>{
 
         });
+      },
+      downloadFile(target){
+        console.log('下载');
+        console.log(target);
+
+        let url = this.url.download;
+        url = url + '?id='+target.id;
+
+        axios.get(url).then((response)=>{
+          console.log(response);
+        }).catch((err)=>{
+          console.log(err);
+        }).finally(()=>{
+
+        });
+
       }
     }
   }
