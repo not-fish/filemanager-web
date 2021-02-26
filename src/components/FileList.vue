@@ -13,7 +13,7 @@
         @change="handleTableChange">
 
         <template slot="action" slot-scope="text">
-          <a @click="downloadFile(text)">下载</a>
+          <a :href="fileUrl" @click="downloadFile(text)">下载</a>
         </template>
 
       </a-table>
@@ -32,6 +32,7 @@
     },
     data(){
       return{
+        fileUrl:null,
         dataSource:[],
         /* 分页参数 */
         ipagination: {
@@ -165,13 +166,15 @@
         let url = this.url.download;
         url = url + '?id='+target.id;
 
-        axios.get(url).then((response)=>{
-          console.log(response);
-        }).catch((err)=>{
-          console.log(err);
-        }).finally(()=>{
+        this.fileUrl = url;
 
-        });
+        // axios.get(url).then((response)=>{
+        //   console.log(response);
+        // }).catch((err)=>{
+        //   console.log(err);
+        // }).finally(()=>{
+        //
+        // });
 
       }
     }
