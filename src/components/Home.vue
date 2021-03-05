@@ -1,7 +1,6 @@
 <template>
   <div>
     <a-divider>文件上传</a-divider>
-
     <a-row>
       <a-col :span="12" :offset="6">
         <UploadFile></UploadFile>

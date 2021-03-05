@@ -1,22 +1,94 @@
 <template>
     <div>
-      <a-table
-        ref="table"
-        size="middle"
-        :loading="loading"
-        :columns="columns"
-        :data-source="dataSource"
-        :pagination="ipagination"
-        rowKey="id"
-        :scroll="{ x: 2000}"
-        bordered
-        @change="handleTableChange">
+      <a-form-model
+        :rules="rules"
+        ref="ruleForm"
+        :model="form">
 
-        <template slot="action" slot-scope="text">
-          <a :href="fileUrl" @click="downloadFile(text)">下载</a>
-        </template>
+        <a-row :gutter="24">
+          <a-col :md="6" :sm="8" :offset="3">
+            <a-form-model-item label="原文件名" prop="oldFileName">
+              <a-input v-model="form.oldFileName"></a-input>
+            </a-form-model-item>
+          </a-col>
 
-      </a-table>
+          <a-col :md="6" :sm="8">
+            <a-form-model-item label="文件名" prop="newFileName">
+              <a-input v-model="form.newFileName"></a-input>
+            </a-form-model-item>
+          </a-col>
+
+          <a-col :md="6" :sm="8">
+            <a-form-model-item label="类型" prop="type">
+              <a-cascader :options="options" placeholder="Please select" @change="cascaderOnChange" />
+            </a-form-model-item>
+          </a-col>
+          <!--只能选择一个月内的数据-->
+          <a-col :md="12" :sm="16" :offset="3">
+            <a-form-item label="上传日期">
+              <a-space size="middle">
+                <a-date-picker
+                  :showTime="true"
+                  format="YYYY-MM-DD"
+                  placeholder="请选择开始时间"
+                  v-model="form.startTime"
+                  :disabled-date="disabledStartDate"
+                  @openChange="handleStartOpenChange"
+                  :locale="locale">
+                  <a-icon slot="suffixIcon" type="smile" />
+                </a-date-picker>
+                <a-icon type="arrow-right" />
+                <a-date-picker
+                  :showTime="true"
+                  format="YYYY-MM-DD"
+                  placeholder="请选择结束时间"
+                  v-model="form.endTime"
+                  :disabled-date="disabledEndDate"
+                  :open="endOpen"
+                  @openChange="handleEndOpenChange"
+                  :locale="locale">
+                  <a-icon slot="suffixIcon" type="smile" />
+                </a-date-picker>
+              </a-space>
+            </a-form-item>
+          </a-col>
+
+          <a-col :md="24" :sm="24" :offset="16">
+            <a-form-model-item :wrapper-col="{ span: 14, offset: 4 }">
+              <a-button type="primary" @click="onSubmit">
+                查询
+              </a-button>
+              <a-button style="margin-left: 10px;" @click="resetForm">
+                重置
+              </a-button>
+            </a-form-model-item>
+          </a-col>
+
+        </a-row>
+      </a-form-model>
+
+      <a-row>
+        <a-col>
+          <a-table
+            ref="table"
+            size="middle"
+            :loading="loading"
+            :columns="columns"
+            :data-source="dataSource"
+            :pagination="ipagination"
+            rowKey="id"
+            :scroll="{ x: 2000}"
+            bordered
+            @change="handleTableChange">
+
+            <template slot="action" slot-scope="text">
+              <a :href="fileUrl" @click="downloadFile(text)">下载</a>
+            </template>
+
+          </a-table>
+        </a-col>
+      </a-row>
+
     </div>
 </template>
 
@@ -24,6 +96,7 @@
 
   import axios from 'axios'
   import moment from 'moment'
+  import locale from 'ant-design-vue/es/date-picker/locale/zh_CN';
 
   export default {
     name: "FileList",
@@ -37,7 +110,7 @@
         /* 分页参数 */
         ipagination: {
           current: 1,
-          pageSize: 5,
+          pageSize: 30,
           pageSizeOptions: ['5','10', '20', '30'],
           showTotal: (total, range) => {
             return range[0] + "-" + range[1] + " 共" + total + "条"
@@ -52,6 +125,21 @@
         isorter:{
           //column: 'createTime',
           order: 'desc',
+        },
+        locale,
+        form: {
+            oldFileName:null,
+            newFileName:null,
+            type:null,
+            startTime: moment(),
+            endTime: moment(),
+        },
+        endOpen: false,
+        //注意事项：<a-form-model>中的model要和<a-input>中的model绑定的前缀一样，例如这里的是form
+        rules: {
+          oldFileName: [{ required: false, message: '请输入原文件名'},],
+          newFileName: [{ required: false, message: '请输入文件名'}],
+          type: [{ required: false, message: 'Please pick a date'}],
         },
         columns: [
           {
@@ -111,13 +199,13 @@
             dataIndex: 'downloadCounts'
           },
           {
-            title:'上传时间',
+            title:'上传日期',
             align:"center",
             ellipsis:true,
             dataIndex: 'uploadTime',
             width:200,
             customRender:function (uploadTime) {
-              return moment(uploadTime).format("yyyy-MM-DD HH:mm:ss:SSS")
+              return moment(uploadTime).format("yyyy-MM-DD HH:mm:ss")
             }
           },
           {
@@ -128,9 +216,36 @@
             scopedSlots: { customRender: 'action' },
           }
         ],
+        options: [
+          {
+            value: 'image',
+            label: 'image',
+            children: [
+              {
+                value: 'png',
+                label: 'png',
+              },
+              {
+                value: 'jpeg',
+                label: 'jpeg',
+              },
+            ],
+          },
+          {
+            value: 'text',
+            label: 'text',
+            children: [
+              {
+                value: 'javascript',
+                label: 'javascript',
+              },
+            ],
+          },
+        ],
         url:{
           list: "http://localhost:9090/filemanager/file/list",
           download: "http://localhost:9090/filemanager/file/download",
+          query:"http://localhost:9090/filemanager/file/query",
         }
       }
     },
@@ -168,15 +283,78 @@
 
         this.fileUrl = url;
 
-        // axios.get(url).then((response)=>{
-        //   console.log(response);
-        // }).catch((err)=>{
-        //   console.log(err);
-        // }).finally(()=>{
-        //
-        // });
+      },
+      onSubmit() {
+        this.$refs.ruleForm.validate(valid => {
+          if (valid) {
+            console.log(this.form);
 
-      }
+            let url = this.url.query;
+
+            let data = new FormData();
+
+            data.append('oldFileName',this.form.oldFileName);
+            data.append('newFileName',this.form.newFileName);
+            data.append('type',this.form.type);
+            data.append('startTime',this.form.startTime.toString());
+            data.append('endTime',this.form.endTime.toString());
+
+            axios.post(url,data).then((response)=>{
+              console.log(response);
+              this.dataSource = response.data;
+            }).catch((err)=>{
+              console.log(err);
+            }).finally(()=>{
+
+            });
+
+            this.$message.success('成功');
+          } else {
+            console.log('error submit!!');
+            return false;
+          }
+        });
+      },
+      resetForm() {
+        this.$refs.ruleForm.resetFields();
+      },
+      cascaderOnChange(value){
+        console.log(value);
+        let options = '';
+        value.forEach((e)=>{
+          options+=e+'/';
+        });
+
+        options = options.substring(0,options.length-1);
+        console.log(options);
+
+        this.form.type = options;
+      },
+      disabledStartDate(startTime) {
+        const endTime = this.form.endTime;
+        if (!startTime || !endTime) {
+          return false;
+        }
+        const days = endTime.diff(startTime,'days');
+
+        return days >= 31 || days <= (-1);
+      },
+      disabledEndDate(endTime) {
+        const startTime = this.form.startTime;
+        if (!endTime || !startTime) {
+          return false;
+        }
+        const days = endTime.diff(startTime,'days');
+        return days >= 31 || days <= (-1);
+      },
+      handleStartOpenChange(open) {
+        if (!open) {
+          this.endOpen = true;
+        }
+      },
+      handleEndOpenChange(open) {
+        this.endOpen = open;
+      },
     }
   }
 </script>
