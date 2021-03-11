@@ -33,8 +33,7 @@
                   placeholder="请选择开始时间"
                   v-model="form.startTime"
                   :disabled-date="disabledStartDate"
-                  @openChange="handleStartOpenChange"
-                  :locale="locale">
+                  @openChange="handleStartOpenChange">
                   <a-icon slot="suffixIcon" type="smile" />
                 </a-date-picker>
                 <a-icon type="arrow-right" />
@@ -45,8 +44,7 @@
                   v-model="form.endTime"
                   :disabled-date="disabledEndDate"
                   :open="endOpen"
-                  @openChange="handleEndOpenChange"
-                  :locale="locale">
+                  @openChange="handleEndOpenChange">
                   <a-icon slot="suffixIcon" type="smile" />
                 </a-date-picker>
               </a-space>
@@ -96,7 +94,6 @@
 
   import axios from 'axios'
   import moment from 'moment'
-  import locale from 'ant-design-vue/es/date-picker/locale/zh_CN';
 
   export default {
     name: "FileList",
@@ -126,7 +123,6 @@
           //column: 'createTime',
           order: 'desc',
         },
-        locale,
         form: {
             oldFileName:null,
             newFileName:null,
