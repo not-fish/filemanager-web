@@ -19,8 +19,8 @@
           </a-col>
 
           <a-col :md="6" :sm="8">
-            <a-form-model-item label="类型" prop="type">
-              <a-cascader :options="options" placeholder="Please select" @change="cascaderOnChange" />
+            <a-form-model-item label="类型">
+              <a-cascader :options="options" @change="cascaderOnChange" />
             </a-form-model-item>
           </a-col>
           <!--只能选择一个月内的数据-->
@@ -135,7 +135,6 @@
         rules: {
           oldFileName: [{ required: false, message: '请输入原文件名'},],
           newFileName: [{ required: false, message: '请输入文件名'}],
-          type: [{ required: false, message: 'Please pick a date'}],
         },
         columns: [
           {
@@ -214,6 +213,10 @@
         ],
         options: [
           {
+            value: '',
+            label: '',
+          },
+          {
             value: 'image',
             label: 'image',
             children: [
@@ -289,11 +292,23 @@
 
             let data = new FormData();
 
-            data.append('oldFileName',this.form.oldFileName);
-            data.append('newFileName',this.form.newFileName);
-            data.append('type',this.form.type);
-            data.append('startTime',this.form.startTime.toString());
-            data.append('endTime',this.form.endTime.toString());
+            if(this.form.oldFileName !== null && this.form.oldFileName !== ""){
+              data.append('oldFileName',this.form.oldFileName);
+            }
+            if(this.form.newFileName !== null && this.form.newFileName !== ""){
+              data.append('newFileName',this.form.newFileName);
+            }
+            if(this.form.type !== null && this.form.type !== ""){
+              data.append('type',this.form.type);
+            }
+
+            if(this.form.startTime !== null){
+              data.append('startTime',this.form.startTime.toString());
+            }
+
+            if(this.form.endTime !== null){
+              data.append('endTime',this.form.endTime.toString());
+            }
 
             axios.post(url,data).then((response)=>{
               console.log(response);
@@ -313,6 +328,8 @@
       },
       resetForm() {
         this.$refs.ruleForm.resetFields();
+        this.form.type = null;
+        this.onSubmit();
       },
       cascaderOnChange(value){
         console.log(value);
