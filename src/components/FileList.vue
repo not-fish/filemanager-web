@@ -8,13 +8,24 @@
         <a-row :gutter="24">
           <a-col :md="6" :sm="8" :offset="3">
             <a-form-model-item label="原文件名" prop="oldFileName">
-              <a-input v-model="form.oldFileName"></a-input>
+              <a-auto-complete
+                v-model="form.oldFileName"
+                :data-source="completeDataSource"
+                style="width: 300px"
+              />
             </a-form-model-item>
           </a-col>
 
           <a-col :md="6" :sm="8">
             <a-form-model-item label="文件名" prop="newFileName">
-              <a-input v-model="form.newFileName"></a-input>
+              <a-auto-complete
+                v-model="form.newFileName"
+                :data-source="completeDataSource"
+                style="width: 300px"
+                @select="onSelect"
+                @search="onSearchByNewFileName"
+                @change="onChange"
+              />
             </a-form-model-item>
           </a-col>
 
@@ -53,7 +64,7 @@
 
           <a-col :md="24" :sm="24" :offset="16">
             <a-form-model-item :wrapper-col="{ span: 14, offset: 4 }">
-              <a-button type="primary" @click="onSubmit">
+              <a-button type="primary" @click="mySearch">
                 查询
               </a-button>
               <a-button style="margin-left: 10px;" @click="resetForm">
@@ -104,6 +115,8 @@
       return{
         fileUrl:null,
         dataSource:[],
+        completeValue:'',
+        completeDataSource:[],
         /* 分页参数 */
         ipagination: {
           current: 1,
@@ -245,6 +258,7 @@
           list: "http://localhost:9090/filemanager/file/list",
           download: "http://localhost:9090/filemanager/file/download",
           query:"http://localhost:9090/filemanager/file/query",
+          findOldFileName:"http://localhost:9090/filemanager/file/findOldFileName",
         }
       }
     },
@@ -283,7 +297,7 @@
         this.fileUrl = url;
 
       },
-      onSubmit() {
+      mySearch() {
         this.$refs.ruleForm.validate(valid => {
           if (valid) {
             console.log(this.form);
@@ -368,6 +382,38 @@
       handleEndOpenChange(open) {
         this.endOpen = open;
       },
+      searchOldFileName(fileName){
+
+        let url = this.url.findOldFileName;
+
+        let data = new FormData();
+
+        if(fileName !== null && fileName !== ""){
+          data.append('newFileName',fileName);
+        }
+
+        axios.post(url,data).then((response)=>{
+          console.log(response);
+          this.completeDataSource = response.data;
+        }).catch((err)=>{
+          console.log(err);
+        }).finally(()=>{
+
+        });
+      },
+
+      onSearchByNewFileName(searchText) {
+        console.log('--searching--');
+        this.completeDataSource = [];
+        this.searchOldFileName(searchText);
+      },
+      onSelect(value) {
+        console.log('onSelect', value);
+      },
+      onChange(value) {
+        console.log('onChange', value);
+      },
+
     }
   }
 </script>
