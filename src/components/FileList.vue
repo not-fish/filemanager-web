@@ -81,27 +81,40 @@
         </a-row>
       </a-form-model>
 
-      <a-row>
-        <a-col>
-          <a-table
-            ref="table"
-            size="middle"
-            :loading="loading"
-            :columns="columns"
-            :data-source="dataSource"
-            :pagination="ipagination"
-            rowKey="id"
-            :scroll="{ x: 2000}"
-            bordered
-            @change="handleTableChange">
+      <div>
+        <a-row>
+          <a-col>
+            <a :href="fileExcelUrl" @click="exportExcel">导出Excel</a>
+          </a-col>
+        </a-row>
+        <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
+          <i class="anticon anticon-info-circle ant-alert-icon"></i> 已选择 <a style="font-weight: 600">{{ selectedRowKeys.length }}</a>项
+          <a style="margin-left: 24px" @click="onClearSelected">清空</a>
+        </div>
 
-            <template slot="action" slot-scope="text">
-              <a :href="fileUrl" @click="downloadFile(text)">下载</a>
-            </template>
+        <a-row>
+          <a-col>
+            <a-table
+              ref="table"
+              size="middle"
+              :loading="loading"
+              :columns="columns"
+              :data-source="dataSource"
+              :pagination="ipagination"
+              rowKey="id"
+              :scroll="{ x: 2000}"
+              bordered
+              :rowSelection="{fixed:true,selectedRowKeys: selectedRowKeys, onChange: onSelectChange}"
+              @change="handleTableChange">
 
-          </a-table>
-        </a-col>
-      </a-row>
+              <template slot="action" slot-scope="text">
+                <a :href="fileUrl" @click="downloadFile(text)">下载</a>
+              </template>
+
+            </a-table>
+          </a-col>
+        </a-row>
+      </div>
 
     </div>
 </template>
@@ -119,9 +132,14 @@
     data(){
       return{
         fileUrl:null,
+        fileExcelUrl:null,
         dataSource:[],
         OldFileNameDataSource:[],
         NewFileNameDataSource:[],
+        /* table选中keys*/
+        selectedRowKeys: [],
+        /* table选中records*/
+        selectionRows: [],
         /* 分页参数 */
         ipagination: {
           current: 1,
@@ -145,8 +163,9 @@
             oldFileName:null,
             newFileName:null,
             type:null,
-            startTime: moment(),
-            endTime: moment(),
+            startTime:null,
+            endTime:null,
+          //如要初始化时间，则 startTime:moment()
         },
         endOpen: false,
         //注意事项：<a-form-model>中的model要和<a-input>中的model绑定的前缀一样，例如这里的是form
@@ -265,6 +284,7 @@
           query:"http://localhost:9090/filemanager/file/query",
           findNewFileName:"http://localhost:9090/filemanager/file/findNewFileName",
           findOldFileName:"http://localhost:9090/filemanager/file/findOldFileName",
+          exportExcel:"http://localhost:9090/filemanager/file/exportExcel",
         }
       }
     },
@@ -292,6 +312,16 @@
         }).finally(()=>{
 
         });
+      },
+      onSelectChange(selectedRowKeys) {
+        console.log("选择了一条数据！");
+        this.selectedRowKeys = selectedRowKeys;
+        console.log(this.selectedRowKeys);
+      },
+      onClearSelected() {
+        this.selectedRowKeys = [];
+        this.selectionRows = [];
+        this.fileExcelUrl = null;
       },
       downloadFile(target){
         console.log('下载');
@@ -349,7 +379,6 @@
       resetForm() {
         this.$refs.ruleForm.resetFields();
         this.form.type = null;
-        this.onSubmit();
       },
       cascaderOnChange(value){
         console.log(value);
@@ -447,7 +476,18 @@
       onChangeByOldFileName(value) {
         console.log('onChange', value);
       },
+      exportExcel(){
+        console.log(this.selectedRowKeys);
 
+        if(this.selectedRowKeys.length === 0){
+          this.$message.warning("未选择任何数据");
+          return;
+        }
+
+        let idList = this.selectedRowKeys.join("s");
+        this.fileExcelUrl = this.url.exportExcel +'?idList='+ idList;
+
+      },
     }
   }
 </script>
