@@ -84,7 +84,10 @@
       <div>
         <a-row>
           <a-col>
-            <a :href="fileExcelUrl" @click="exportExcel">导出Excel</a>
+            <div class="my_div_a">
+              <a :href="fileExcelUrl" @click="exportExcel">导出Excel</a>
+            </div>
+
           </a-col>
         </a-row>
         <div class="ant-alert ant-alert-info" style="margin-bottom: 16px;">
@@ -493,5 +496,22 @@
 </script>
 
 <style scoped>
+  .my_div_a{
+    display: block;
+    width: 100px;
+    height: 30px;
+    border: 1px solid #CCC;
+    background: #1DA57A;
+    margin-top: 20px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
 
+  .my_div_a a{
+    font-size: 15px;
+    padding: 2px 6px;
+    display: block;
+    color: #ffffff;
+    margin-left: 10px;
+  }
 </style>
